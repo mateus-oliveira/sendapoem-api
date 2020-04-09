@@ -6,6 +6,17 @@ def follow(mysql):
     id_author_followed = request.get_json()['id_followed']
     
     sql = mysql.connection.cursor()
+
+    sql.execute('''
+        select * from follower
+        where id_author_following = {}
+    '''.format(id_author_following))
+
+    followers = sql.fetchall()
+
+    if len(followers) >= 7500:
+        return jsonify({'error': 'You are followed 7500 authors.'}), 400
+
     sql.execute('''
         insert into follower (id_author_following, id_author_followed) 
         values ({}, {}) 
