@@ -3,8 +3,8 @@ from flask import request, jsonify
 
 def create_poem(mysql):
     id_author = request.headers['id']
-    title = request.form.get('title')
-    body = request.form.get('body')
+    title = request.get_json()['title']
+    body = request.get_json()['body']
     
     sql = mysql.connection.cursor()
 
@@ -94,3 +94,36 @@ def list_poems_by_author(mysql):
     mysql.connection.commit()
 
     return jsonify({'poems': response}), 200
+
+def feed_poems(mysql):
+    id_author = request.headers['id']
+    page = request.get_json()['page']
+    limit = 10
+    offset = (page - 1) * limit
+
+    sql = mysql.connection.cursor()
+
+    sql.execute('''
+        select * from follower
+        where id_author_following = {}
+    '''.format(id_author))
+    following = sql.fetchall()
+
+    id_authors = ["id_author = {}".format(id_author)]
+    for follower in following:
+        id_authors.append("id_author = {}".format(follower['id_author_followed']))
+
+    where = "where {}".format(" or ".join(id_authors))
+
+    sql.execute('''
+        select * from poem
+        {}
+        order by id desc
+        limit {} offset {}
+    '''.format(where, limit, offset))
+
+    poems = sql.fetchall()
+
+    mysql.connection.commit()
+
+    return jsonify({'poems': poems}), 200

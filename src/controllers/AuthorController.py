@@ -222,7 +222,7 @@ def confirm_email(mysql):
         update author
         set status = {}
         where id = {}
-    '''.format(0, id_author))
+    '''.format(1, id_author))
     
     sql.execute('select * from author where id = {}'.format(id_author))
     

@@ -7,6 +7,7 @@ from config.config import mysql, server
 from controllers.AuthorController import *
 from controllers.CommentController import *
 from controllers.PoemController import *
+from controllers.FollowerController import *
 
 import jwt
 import datetime 
@@ -38,6 +39,7 @@ def token_required(f):
         return f(*args, *kwargs)
     
     return decorated
+
 
 #-----------------------------------------#
 #    REQUISIÕES FEITAS À TABELA author    #
@@ -91,9 +93,15 @@ def resetPassword():
 def confirmEmail(): 
     return confirm_email(mysql)
 
+
 #-----------------------------------------#
 #     REQUISIÕES FEITAS À TABELA poem     #
 #-----------------------------------------#
+@server.route('/feed', methods = ['GET'])
+@token_required
+def feed():
+    return feed_poems(mysql)
+
 @server.route('/poem', methods = ['GET', 'POST', 'PUT', 'DELETE'])
 @token_required
 def poem(): 
@@ -121,7 +129,27 @@ def allpoems():
 
 
 #-----------------------------------------#
-#    REQUISIÕES FEITAS À TABELA comment    #
+#   REQUISIÕES FEITAS À TABELA follower   #
+#-----------------------------------------#
+@server.route('/follower', methods = ['GET', 'POST', 'DELETE'])
+@token_required
+def follower(): 
+    if request.method == 'POST':
+        return follow(mysql)
+
+    elif request.method == 'DELETE':
+        return unfollow(mysql)
+    
+    else:
+        return get_following(mysql)
+
+@server.route('/follow_me', methods = ['GET'])
+@token_required
+def follow_me(): 
+    return get_followed(mysql)
+
+#-----------------------------------------#
+#    REQUISIÕES FEITAS À TABELA comment   #
 #-----------------------------------------#
 @server.route('/comment', methods = ['GET', 'POST', 'PUT', 'DELETE'])
 @token_required
