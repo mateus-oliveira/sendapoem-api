@@ -67,6 +67,7 @@ def author():
         return delete_author(mysql)
 
 @server.route('/authors', methods = ['GET'])
+@token_required
 def authors(): 
     return list_authors(mysql)
 
