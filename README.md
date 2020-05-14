@@ -1,4 +1,4 @@
-# Send e Poem
+# Send a Poem
 
 This is the repository for the application Send a Poem, an application for publish poems and follow others poets, to see our their poems and send to friends on Whatsapp or Email. 
 
