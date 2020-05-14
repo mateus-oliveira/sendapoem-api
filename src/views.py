@@ -63,7 +63,7 @@ def confirmEmail():
 def feed():
     return feed_poems(mysql)
 
-def poem(): 
+def poem(request): 
     if request.method == 'POST': 
         return create_poem(mysql)
 
@@ -86,7 +86,7 @@ def allpoems():
 #-----------------------------------------#
 #   REQUISIÕES FEITAS À TABELA follower   #
 #-----------------------------------------#
-def follower(): 
+def follower(request): 
     if request.method == 'POST':
         return follow(mysql)
 
@@ -102,7 +102,7 @@ def follow_me():
 #-----------------------------------------#
 #    REQUISIÕES FEITAS À TABELA comment   #
 #-----------------------------------------#
-def comment():
+def comment(request):
     if request.method == 'POST': 
         return create_comment(mysql)
 
