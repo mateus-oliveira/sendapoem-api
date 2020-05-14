@@ -5,8 +5,12 @@ from random import randint
 from flask import request, jsonify, send_from_directory, abort
 from werkzeug.utils import secure_filename
 
+from server import server
+from utils.sendemail import *
+from database.config import mysql
 
-def create_author(mysql, welcome_email):
+
+def create_author():
     name = request.get_json()['name']
     email = request.get_json()['email']
     phone = request.get_json()['phone']
@@ -34,7 +38,7 @@ def create_author(mysql, welcome_email):
 
     return jsonify({'author': response}), 200
 
-def find_author(mysql):
+def find_author():
     id_author = request.headers['id']
 
     sql = mysql.cursor()
@@ -46,7 +50,7 @@ def find_author(mysql):
 
     return jsonify({'author': response[0]}), 200
 
-def update_author(mysql):
+def update_author():
     id_author = request.headers['id']
     name = request.form.get('name')
     email = request.form.get('email')
@@ -70,7 +74,7 @@ def update_author(mysql):
 
     return jsonify({'author': response[0]}), 200
 
-def delete_author(mysql):   
+def delete_author():   
     id_author = request.headers['id']
 
     sql = mysql.cursor()
@@ -83,7 +87,7 @@ def delete_author(mysql):
 
     return jsonify({'removed': True}), 200
 
-def list_authors(mysql):
+def list_authors():
     sql = mysql.cursor()
 
     sql.execute('select * from author')
@@ -97,7 +101,7 @@ def list_authors(mysql):
 
     return jsonify({'authors': response}), 200
 
-def upload_picture(mysql, server):
+def upload_picture():
     picture = request.files['picture']
 
     rand_int = randint(10000000000000000, 99999999999999999)
@@ -136,7 +140,7 @@ def upload_picture(mysql, server):
 
     return jsonify({'author': response[0]}), 200
 
-def get_author_picture(server, picture):
+def get_author_picture(picture):
     mimetype = 'image/{}'.format(picture.split('.')[1])
 
     try:
@@ -149,7 +153,7 @@ def get_author_picture(server, picture):
     except FileNotFoundError:
         abort(404)
 
-def login(mysql, token_jwt, cod_confirm_email):
+def login(token_jwt):
     email = request.get_json()['email']
     password = request.get_json()['password']
 
@@ -205,7 +209,7 @@ def login(mysql, token_jwt, cod_confirm_email):
 
     return jsonify({'author': author, 'token': token_jwt.decode('UTF-8')})
 
-def confirm_email(mysql):
+def confirm_email():
     value = request.form.get('value')
     id_author = request.headers['id']
 
@@ -238,7 +242,7 @@ def confirm_email(mysql):
 
     return jsonify({'author': author[0]}), 200
 
-def get_forgot_password(mysql, pwd_email):
+def get_forgot_password():
     email = request.form.get('email')
 
     sql = mysql.cursor()
@@ -288,7 +292,7 @@ def get_forgot_password(mysql, pwd_email):
 
     return jsonify({'password': True}), 200
 
-def reset_password(mysql):
+def reset_password():
     email = request.get_json()['email']
     password = request.get_json()['password']
     token = request.get_json()['token']

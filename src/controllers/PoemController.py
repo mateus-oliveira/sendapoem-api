@@ -1,7 +1,9 @@
 from flask import request, jsonify
 
+from utils.sendemail import *
+from database.config import mysql
 
-def create_poem(mysql):
+def create_poem():
     id_author = request.headers['id']
     title = request.get_json()['title']
     body = request.get_json()['body']
@@ -20,7 +22,7 @@ def create_poem(mysql):
 
     return jsonify({'poem': response[0]}), 200
 
-def find_poem(mysql):
+def find_poem():
     id_poem = request.headers['id']
 
     sql = mysql.cursor()
@@ -32,7 +34,7 @@ def find_poem(mysql):
 
     return jsonify({'poem': response[0]}), 200
 
-def update_poem(mysql):
+def update_poem():
     id_poem = int(request.headers['id'])
     id_author = int(request.headers['id_author'])
     title = request.form.get('title')
@@ -59,7 +61,7 @@ def update_poem(mysql):
 
     return jsonify({'poem': response[0]}), 200
 
-def delete_poem(mysql):   
+def delete_poem():   
     id_poem = request.headers['id']
 
     sql = mysql.cursor()
@@ -71,7 +73,7 @@ def delete_poem(mysql):
 
     return jsonify({'removed': True}), 200
 
-def list_poems(mysql):
+def list_poems():
     sql = mysql.cursor()
 
     sql.execute('select * from poem')
@@ -82,7 +84,7 @@ def list_poems(mysql):
 
     return jsonify({'poems': response}), 200
 
-def list_poems_by_author(mysql):
+def list_poems_by_author():
     sql = mysql.cursor()
 
     id_author = request.headers['id']
@@ -95,7 +97,7 @@ def list_poems_by_author(mysql):
 
     return jsonify({'poems': response}), 200
 
-def feed_poems(mysql):
+def feed_poems():
     id_author = request.headers['id']
     page = request.get_json()['page']
     limit = 10

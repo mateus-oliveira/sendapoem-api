@@ -1,5 +1,8 @@
 from flask import request, jsonify
 
+from server import server
+from utils.sendemail import *
+from database.config import mysql
 
 def follow(mysql):
     id_author_following = request.headers['id_following']

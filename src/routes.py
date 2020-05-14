@@ -1,52 +1,71 @@
 from flask import request
 
-from middlewares.auth import token_required
+from functools import wraps
+
+from controllers.AuthorController import *
+from controllers.CommentController import *
+from controllers.PoemController import *
+from controllers.FollowerController import *
+
 from server import server
-import views
+from middlewares.auth import token_required
+
+import jwt
+import datetime
+
 
 #-----------------------------------------#
 #    REQUISIÕES FEITAS À TABELA author    #
 #-----------------------------------------#
 @server.route('/login', methods=['POST'])
 def sing_in(): 
-    return views.sing_in(request)
+    email = request.get_json()['email']
+    token_jwt = jwt.encode({'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=(24*60))}, server.config['JWT'])
+    return login(token_jwt)
 
 @server.route('/author', methods = ['POST'])
-def createAuthor(): 
-    return views.createAuthor()
+def createAuthor():
+    return create_author()
 
 @server.route('/author', methods = ['GET', 'PUT', 'DELETE'])
 @token_required
 def author(): 
-    return views.author(request)
+    if request.method == 'GET':
+        return find_author() 
+
+    elif request.method == 'PUT':
+        return update_author()
+
+    else:
+        return delete_author()
 
 @server.route('/authors', methods = ['GET'])
 @token_required
 def authors(): 
-    return views.authors()
+    return list_authors()
 
 @server.route('/upload', methods = ['PUT'])
 @token_required
 def upload(): 
-    return views.upload()
+    return upload_picture()
 
 @server.route('/get_picture/<picture>', methods = ['GET'])
 @token_required
 def get_picture(picture): 
-    return views.get_picture(picture)
+    return get_author_picture(picture)
 
 @server.route('/author/forgot_password/', methods = ['POST'])
 def forgot_password(): 
-    return views.forgot_password()
+    return get_forgot_password()
 
 @server.route('/author/reset_password/', methods = ['POST'])
 def resetPassword(): 
-    return views.resetPassword()
+    return reset_password()
 
 @server.route('/author/confirm_email', methods = ['POST'])
 @token_required
 def confirmEmail(): 
-    return views.confirmEmail()
+    return confirm_email()
 
 
 #-----------------------------------------#
@@ -55,22 +74,32 @@ def confirmEmail():
 @server.route('/feed', methods = ['GET'])
 @token_required
 def feed():
-    return views.feed()
+    return feed_poems()
 
 @server.route('/poem', methods = ['GET', 'POST', 'PUT', 'DELETE'])
 @token_required
 def poem(): 
-    return views.poem(request)
+    if request.method == 'POST': 
+        return create_poem()
+
+    elif request.method == 'GET':
+        return find_poem() 
+
+    elif request.method == 'PUT':
+        return update_poem()
+
+    else:
+        return delete_poem()
 
 @server.route('/poems', methods = ['GET'])
 @token_required
 def poems(): 
-    return views.poems()
+    return list_poems_by_author()
 
 @server.route('/allpoems', methods = ['GET'])
 @token_required
 def allpoems(): 
-    return views.allpoems()
+    return list_poems()
 
 
 #-----------------------------------------#
@@ -79,12 +108,20 @@ def allpoems():
 @server.route('/follower', methods = ['GET', 'POST', 'DELETE'])
 @token_required
 def follower(): 
-    return views.follower(request)
+    if request.method == 'POST':
+        return follow()
+
+    elif request.method == 'DELETE':
+        return unfollow()
+    
+    else:
+        return get_following()
+
 
 @server.route('/follow_me', methods = ['GET'])
 @token_required
 def follow_me(): 
-    return views.follow_me()
+    return get_followed()
 
 #-----------------------------------------#
 #    REQUISIÕES FEITAS À TABELA comment   #
@@ -92,7 +129,17 @@ def follow_me():
 @server.route('/comment', methods = ['GET', 'POST', 'PUT', 'DELETE'])
 @token_required
 def comment():
-    return views.comment(request)
+    if request.method == 'POST': 
+        return create_comment()
+
+    elif request.method == 'GET':
+        return list_comments() 
+
+    elif request.method == 'PUT':
+        return update_comment()
+
+    else:
+        return delete_comment()
 
 
 if __name__ == '__main__':

@@ -1,7 +1,8 @@
 from flask import request, jsonify
 
+from database.config import mysql
 
-def create_comment(mysql):
+def create_comment():
     id_author = request.headers['id_author']
     id_poem = request.headers['id_poem']
     message = request.form.get('title')
@@ -22,7 +23,7 @@ def create_comment(mysql):
 
     return jsonify({'comment': response[0]}), 200
 
-def update_comment(mysql):
+def update_comment():
     id_comment = int(request.headers['id'])
     id_author = int(request.headers['id_author'])
     message = request.form.get('message')
@@ -48,7 +49,7 @@ def update_comment(mysql):
 
     return jsonify({'comment': response[0]}), 200
 
-def delete_comment(mysql):   
+def delete_comment():   
     id_comment = request.headers['id']
 
     sql = mysql.cursor()
@@ -59,7 +60,7 @@ def delete_comment(mysql):
 
     return jsonify({'removed': True}), 200
 
-def list_comments(mysql):
+def list_comments():
     sql = mysql.cursor()
 
     id_poem = request.headers['id']
