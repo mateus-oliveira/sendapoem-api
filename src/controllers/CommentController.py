@@ -1,6 +1,6 @@
 from flask import request, jsonify
 
-from database.config import mysql
+from ..database.config import mysql
 
 def create_comment():
     id_author = request.headers['id_author']

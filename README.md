@@ -34,7 +34,19 @@ pip install -r requirements.txt
 After this, you can server the API and access the urls. Execute:
 
 ```bash
-python src/routes.py
+python app.py
+```
+And the server is started
+```python
+# * Serving Flask app "src.server" (lazy loading)
+# * Environment: production
+#   WARNING: This is a development server. Do not use it in a production deployment.
+#   Use a production WSGI server instead.
+# * Debug mode: on
+# * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+# * Restarting with stat
+# * Debugger is active!
+# * Debugger PIN: 181-032-871
 ```
 
 The endpoints for access the API are at the [requests.json](./endpoints/requests.json) file. You can import this file with [Postman](https://www.postman.com/) or [Insomnia](https://insomnia.rest/download/).

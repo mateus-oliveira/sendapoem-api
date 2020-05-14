@@ -5,9 +5,9 @@ from random import randint
 from flask import request, jsonify, send_from_directory, abort
 from werkzeug.utils import secure_filename
 
-from server import server
-from utils.sendemail import *
-from database.config import mysql
+from ..server import server
+from ..utils.sendemail import *
+from ..database.config import mysql
 
 
 def create_author():

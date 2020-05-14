@@ -1,12 +1,12 @@
 from flask import request
 
-from controllers.AuthorController import *
-from controllers.CommentController import *
-from controllers.PoemController import *
-from controllers.FollowerController import *
+from .controllers.AuthorController import *
+from .controllers.CommentController import *
+from .controllers.PoemController import *
+from .controllers.FollowerController import *
 
-from server import server
-from middlewares.auth import token_required
+from .server import server
+from .middlewares.auth import token_required
 
 import jwt
 import datetime

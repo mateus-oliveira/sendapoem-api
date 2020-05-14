@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
-from utils.sendemail import *
-from database.config import mysql
+from ..utils.sendemail import *
+from ..database.config import mysql
 
 def create_poem():
     id_author = request.headers['id']
