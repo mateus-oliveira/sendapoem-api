@@ -1,7 +1,5 @@
 from flask import request
 
-from functools import wraps
-
 from controllers.AuthorController import *
 from controllers.CommentController import *
 from controllers.PoemController import *
