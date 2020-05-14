@@ -11,3 +11,10 @@ server.config['ALLOWED_EXTENSIONS'] = ('png', 'jpg', 'jpeg', 'gif')
 
 # JSON web token
 server.config['JWT'] = 'sendapoem'
+
+
+# BODY_FORM = request.form.get('value')
+# BODY_JSON = request.get_json()
+# FILES = request.files['file']
+# HEADER = request.headers['value']
+# QUERY = request.args.get('value')
