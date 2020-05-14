@@ -6,7 +6,7 @@ def create_poem(mysql):
     title = request.get_json()['title']
     body = request.get_json()['body']
     
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         insert into poem (id_author, title, body) 
@@ -14,21 +14,21 @@ def create_poem(mysql):
     '''.format(id_author, title, body))
     sql.execute('select * from poem where id_author = "{}" and title = "{}"'.format(id_author, title))
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'poem': response[0]}), 200
 
 def find_poem(mysql):
     id_poem = request.headers['id']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
     sql.execute('select * from poem where id = {}'.format(id_poem))
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'poem': response[0]}), 200
 
@@ -38,10 +38,10 @@ def update_poem(mysql):
     title = request.form.get('title')
     body = request.form.get('body')
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('select * from poem where id = {}'.format(id_poem))
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
     if response[0]['id_author'] != id_author:
         return jsonify({'error': "Do you can't change this poem."})
@@ -53,45 +53,45 @@ def update_poem(mysql):
     '''.format(title, body, id_poem))
     sql.execute('select * from poem where id = {}'.format(id_poem))
     
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'poem': response[0]}), 200
 
 def delete_poem(mysql):   
     id_poem = request.headers['id']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('delete from comment where id_poem = {}'.format(id_poem))
     sql.execute('delete from poem where id = {}'.format(id_poem))
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'removed': True}), 200
 
 def list_poems(mysql):
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('select * from poem')
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'poems': response}), 200
 
 def list_poems_by_author(mysql):
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     id_author = request.headers['id']
 
     sql.execute('select * from poem where id = {}'.format(id_author))
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'poems': response}), 200
 
@@ -101,13 +101,13 @@ def feed_poems(mysql):
     limit = 10
     offset = (page - 1) * limit
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         select * from follower
         where id_author_following = {}
     '''.format(id_author))
-    following = sql.fetchall()
+    following = sql.fetchall()[0]
 
     id_authors = ["id_author = {}".format(id_author)]
     for follower in following:
@@ -122,8 +122,8 @@ def feed_poems(mysql):
         limit {} offset {}
     '''.format(where, limit, offset))
 
-    poems = sql.fetchall()
+    poems = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'poems': poems}), 200

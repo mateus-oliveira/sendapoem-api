@@ -6,7 +6,7 @@ def create_comment(mysql):
     id_poem = request.headers['id_poem']
     message = request.form.get('title')
     
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         insert into comment (id_author, id_poem, message) 
@@ -16,9 +16,9 @@ def create_comment(mysql):
         select * from comment where id_author = {} and id_poem = {}
     '''.format(id_author, id_poem))
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'comment': response[0]}), 200
 
@@ -27,10 +27,10 @@ def update_comment(mysql):
     id_author = int(request.headers['id_author'])
     message = request.form.get('message')
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('select * from comment where id = {}'.format(id_comment))
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
     if response[0]['id_author'] != id_author:
         return jsonify({'error': "Do you can't change this comment."})
@@ -42,32 +42,32 @@ def update_comment(mysql):
     '''.format(message, id_comment))
     sql.execute('select * from comment where id = {}'.format(id_comment))
     
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'comment': response[0]}), 200
 
 def delete_comment(mysql):   
     id_comment = request.headers['id']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('delete from comment where id = {}'.format(id_comment))
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'removed': True}), 200
 
 def list_comments(mysql):
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     id_poem = request.headers['id']
 
     sql.execute('select * from comment where id_poem = {}'.format(id_poem))
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'comments': response}), 200

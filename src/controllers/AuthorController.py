@@ -12,7 +12,7 @@ def create_author(mysql, welcome_email):
     phone = request.get_json()['phone']
     password = request.get_json()['password']
     
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
     sql.execute('select * from author where email = "{}"'.format(email))
 
     response = sql.fetchall()
@@ -26,25 +26,23 @@ def create_author(mysql, welcome_email):
     '''.format(name, email, phone, password))
     sql.execute('select * from author where email = "{}"'.format(email))
 
-    response = sql.fetchall()
-    response[0]['password'] = None
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     welcome_email(email, name)
 
-    return jsonify({'author': response[0]}), 200
+    return jsonify({'author': response}), 200
 
 def find_author(mysql):
     id_author = request.headers['id']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
     sql.execute('select * from author where id = {}'.format(id_author))
 
-    response = sql.fetchall()
-    response[0]['password'] = None
+    response = sql.fetchall()[0]
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'author': response[0]}), 200
 
@@ -55,7 +53,7 @@ def update_author(mysql):
     phone = request.form.get('phone')
     password = request.form.get('password')
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         update author
@@ -65,37 +63,37 @@ def update_author(mysql):
 
     sql.execute('select * from author where id = {}'.format(id_author))
     
-    response = sql.fetchall()
-    response[0]['password'] = None
+    response = sql.fetchall()[0]
+    
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'author': response[0]}), 200
 
 def delete_author(mysql):   
     id_author = request.headers['id']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('delete from comment where id_author = {}'.format(id_author))
     sql.execute('delete from poem where id_author = {}'.format(id_author))
     sql.execute('delete from author where id = {}'.format(id_author))
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'removed': True}), 200
 
 def list_authors(mysql):
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('select * from author')
 
-    response = sql.fetchall()
+    response = sql.fetchall()[0]
 
     for author in response:
         author['password'] = None
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'authors': response}), 200
 
@@ -123,7 +121,7 @@ def upload_picture(mysql, server):
     id_author = request.headers['id']
 
     # Atualizando no banco de dados o caminho da foto
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
     sql.execute('''
         update author 
         set picture = "/get_picture/{}" 
@@ -131,10 +129,10 @@ def upload_picture(mysql, server):
     '''.format(picture_name, id_author))
     sql.execute('select * from author where id = {}'.format(id_author))
     
-    response = sql.fetchall()
-    response[0]['password'] = None
+    response = sql.fetchall()[0]
+    
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'author': response[0]}), 200
 
@@ -155,18 +153,18 @@ def login(mysql, token_jwt, cod_confirm_email):
     email = request.get_json()['email']
     password = request.get_json()['password']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
     sql.execute('''
         select * from author
         where email = '{}' and password = '{}'
     '''.format(email, password))
     
-    author = sql.fetchall()
+    author = sql.fetchall()[0]
 
     if not author:
         return jsonify({'error': 'Usuário não encontrado.'})
 
-    if author[0]['status'] == 4:
+    if author[7] == 4:
         token_email = randint(100000, 999999)
 
         now = datetime.now()
@@ -176,42 +174,48 @@ def login(mysql, token_jwt, cod_confirm_email):
         sql.execute('''
             select * from code
             where id_author = '{}'
-        '''.format(author[0]['id']))
+        '''.format(author[0]))
         code = sql.fetchall()
 
-        if code:
+        if len(code) > 0:
             sql.execute('''
                 update code 
                 set value = "{}", expires = "{}" 
                 where id = {}
-            '''.format(token_email, timestamp, code[0]['id']))
-            code = sql.fetchall()
+            '''.format(token_email, timestamp, code[0][0]))
+
+            sql.execute('''
+                select * from code where id_author = {}
+            '''.format(author[0]))
+            code = sql.fetchall()[0]
         else:
             sql.execute('''
                 insert into code (id_author, value, expires)
                 values ({}, "{}", "{}")
-            '''.format(author[0]['id'], token_email, timestamp))
-            code = sql.fetchall()
+            '''.format(author[0], token_email, timestamp))
 
-        cod_confirm_email(author[0]['email'], author[0]['name'], token_email)
-    
-    author[0]['password'] = None
+            sql.execute('''
+                select * from code where id_author = {}
+            '''.format(author[0]))
+            code = sql.fetchall()[0]
 
-    mysql.connection.commit()
+        cod_confirm_email(author[2], author[1], token_email)
 
-    return jsonify({'author': author[0], 'token': token_jwt.decode('UTF-8')})
+    mysql.commit()
+
+    return jsonify({'author': author, 'token': token_jwt.decode('UTF-8')})
 
 def confirm_email(mysql):
     value = request.form.get('value')
     id_author = request.headers['id']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         select * from code
         where id_author = '{}'
     '''.format(id_author))
-    code = sql.fetchall()
+    code = sql.fetchall()[0]
 
     if not code:
         return jsonify({'error': 'Código não encontrado!'}), 400
@@ -226,25 +230,25 @@ def confirm_email(mysql):
     
     sql.execute('select * from author where id = {}'.format(id_author))
     
-    author = sql.fetchall()
+    author = sql.fetchall()[0]
 
     author[0]['password'] = None
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'author': author[0]}), 200
 
 def get_forgot_password(mysql, pwd_email):
     email = request.form.get('email')
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         select * from author 
         where email = "{}"
     '''.format(email))
 
-    author = sql.fetchall()
+    author = sql.fetchall()[0]
 
     if not author:
         return jsonify({'error': "Author don't found!"}), 400
@@ -259,7 +263,7 @@ def get_forgot_password(mysql, pwd_email):
         select * from code
         where id_author = '{}'
     '''.format(author[0]['id']))
-    code = sql.fetchall()
+    code = sql.fetchall()[0]
 
     if code:
         sql.execute('''
@@ -267,20 +271,20 @@ def get_forgot_password(mysql, pwd_email):
             set value = "{}", expires = "{}" 
             where id = {}
         '''.format(token, timestamp, code[0]['id']))
-        code = sql.fetchall()
+        code = sql.fetchall()[0]
     else:
         sql.execute('''
             insert into code (id_author, value, expires)
             values ({}, "{}", "{}")
         '''.format(author[0]['id'], token, timestamp))
-        code = sql.fetchall()
+        code = sql.fetchall()[0]
 
         
     pwd_email(author[0]['email'], author[0]['name'], token)
 
     author[0]['password'] = None
 
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'password': True}), 200
 
@@ -289,14 +293,14 @@ def reset_password(mysql):
     password = request.get_json()['password']
     token = request.get_json()['token']
 
-    sql = mysql.connection.cursor()
+    sql = mysql.cursor()
 
     sql.execute('''
         select * from author
         where email = '{}'
     '''.format(email))
     
-    author = sql.fetchall()
+    author = sql.fetchall()[0]
 
     if not author:
         return jsonify({'error': 'Usuário não encontrado.'})
@@ -305,7 +309,7 @@ def reset_password(mysql):
         select * from code
         where id_author = '{}'
     '''.format(author[0]['id']))
-    code = sql.fetchall()
+    code = sql.fetchall()[0]
 
     if not code:
         return jsonify({'error': 'Código não encontrado!'}), 400
@@ -327,6 +331,6 @@ def reset_password(mysql):
 
     sql.execute('delete from code where id_author = {}'.format(author[0]['id']))
     
-    mysql.connection.commit()
+    mysql.commit()
 
     return jsonify({'new_password': True}), 204
